@@ -57,19 +57,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  initState() {
-    super.initState();
-    _loadMap();
-    initPortListener(context);
-  }
-
   Future<void> _loadMap() async {
     final prefs = await SharedPreferences.getInstance();
     String json = prefs.getString('mapJson') ?? "";
     setState(() {
       Provider.of<AppModel>(context, listen: false).updateJson(json);
     });
+  }
+
+  @override
+  initState() {
+    super.initState();
+    _loadMap();
+    initPortListener(context);
   }
 
   @override
@@ -89,12 +89,7 @@ class _HomePageState extends State<HomePage> {
           );
           return Scaffold(
             appBar: AppBar(
-              leading: Icon(
-                context.watch<AppModel>().ffiState == FFIState.ok
-                    ? Icons.check_circle
-                    : Icons.error_outlined,
-                semanticLabel: "FFI State",
-              ),
+              leading: context.watch<AppModel>().ffiIcon,
               title: const Text('Systems App'),
               bottom: TabBar(tabs: tabs),
             ),
