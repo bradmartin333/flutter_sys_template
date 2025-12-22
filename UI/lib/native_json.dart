@@ -7,12 +7,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sys_template/app_model.dart';
 import 'package:flutter_sys_template/generated_bindings.dart';
-import 'package:path/path.dart' as p;
-import 'package:provider/provider.dart';
-
-enum FFIState { none, sent, waiting, ok, fail }
-
-FFIState ffiState = FFIState.none;
+import 'package:path/path.dart';
 
 class PathMap {
   final bool valid;
@@ -80,11 +75,11 @@ final DynamicLibrary dylib = () {
     return DynamicLibrary.open('libjson.so');
   }
   if (Platform.isLinux) {
-    return DynamicLibrary.open(p.join(
+    return DynamicLibrary.open(join(
         Directory.current.parent.path, 'json_library', 'bin', 'libjson.so'));
   }
   if (Platform.isWindows) {
-    return DynamicLibrary.open(p.join(Directory.current.parent.path,
+    return DynamicLibrary.open(join(Directory.current.parent.path,
         'json_library', 'bin', 'Debug', 'json_library.dll'));
   }
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
@@ -99,28 +94,9 @@ void initPortListener(BuildContext context) {
   _bindings.Dart_InitializeApiDL(NativeApi.initializeApiDLData);
 
   port.listen((data) {
-    ffiState = FFIState.ok;
-    Provider.of<AppModel>(context, listen: false).updateJson(data);
+    getIt<AppModel>().updateFFIState(FFIState.ok);
+    getIt<AppModel>().updateJson(data);
   });
-}
-
-String jsonStateString() {
-  String output = "FFI ";
-  switch (ffiState) {
-    case FFIState.waiting:
-    case FFIState.ok:
-    case FFIState.fail:
-      output += ffiState.name.toUpperCase();
-    case FFIState.none:
-    default:
-      final json = jsonDecode(helloJSON()) as Map<String, dynamic>;
-      if (json['valid'] != null && json['valid']) {
-        ffiState = FFIState.ok;
-      }
-      output += "N/A";
-      break;
-  }
-  return output;
 }
 
 String helloJSON() {
@@ -142,7 +118,7 @@ void sendMap(
     mapString,
     [],
   );
-  ffiState = FFIState.waiting;
+  getIt<AppModel>().updateFFIState(FFIState.waiting);
   String pathJsonString = jsonEncode(pathmap.toJson());
   var ptr = pathJsonString.toNativeUtf8().cast<Char>();
   _bindings.makeMap(ptr, pathJsonString.length, port.sendPort.nativePort);

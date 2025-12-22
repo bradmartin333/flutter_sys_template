@@ -9,8 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   //debugRepaintRainbowEnabled = true;
+  getIt.registerSingleton<AppModel>(AppModel());
   runApp(ChangeNotifierProvider(
-    create: (context) => AppModel(),
+    create: (context) => getIt<AppModel>(),
     child: const SysApp(),
   ));
 }
@@ -88,18 +89,14 @@ class _HomePageState extends State<HomePage> {
           );
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Systems App'),
-              bottom: TabBar(
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.white,
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                indicator: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10)),
-                    color: Theme.of(context).tabBarTheme.indicatorColor),
-                tabs: tabs,
+              leading: Icon(
+                context.watch<AppModel>().ffiState == FFIState.ok
+                    ? Icons.check_circle
+                    : Icons.error_outlined,
+                semanticLabel: "FFI State",
               ),
+              title: const Text('Systems App'),
+              bottom: TabBar(tabs: tabs),
             ),
             body: TabBarView(
               physics: const NeverScrollableScrollPhysics(),
@@ -109,10 +106,6 @@ class _HomePageState extends State<HomePage> {
                 one(),
               ],
             ),
-            bottomSheet:
-                Consumer<AppModel>(builder: (context, appModel, child) {
-              return Text(jsonStateString());
-            }),
           );
         },
       ),
