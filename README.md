@@ -33,3 +33,17 @@ These instructions assume you have a working Flutter installation. If not, follo
 1. `sudo apt install cmake clang lldb lld`
 1. `cd json_library/`
 1. `./build.sh` (Not `sudo` or paths will be wrong!)
+
+# TODO
+
+- Refactor UI for Flutter version layout changes
+- Add macOS build instructions
+- Add iOS build instructions
+- Add custom icons
+- Add custom splash screens
+- Create GitHub templates for issues and PRs
+- Add CI/CD workflows
+- Add unit tests
+- Add integration tests
+- Add localization support
+- Add database integration examples
