@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 const double buttonPadding = 3;
 
-DrawingTool tool = DrawingTool.draw;
+DrawingTool tool = DrawingTool.position;
 double rectSize = 20;
 Point mapSize = const Point(-1, -1);
 Offset mapInset = Offset.zero;
@@ -59,7 +59,7 @@ void gestureEvent(BuildContext context, dynamic gesture) {
         }
         break;
       case DrawingTool.none:
-      break;
+        break;
     }
   }
 }
@@ -77,23 +77,7 @@ void updateMap() {
               : 32)));
 }
 
-Widget makeToolButton(
-    DrawingTool thisTool, IconData iconData, Function setState) {
-  return Padding(
-    padding: const EdgeInsets.all(buttonPadding),
-    child: FilledButton.tonal(
-      onPressed: () => setState(() => tool = thisTool),
-      child: Icon(
-        iconData,
-        color: tool == thisTool ? Colors.green : null,
-      ),
-    ),
-  );
-}
-
 Widget mapSolver() {
-  var userDelete = false;
-
   return StatefulBuilder(
     builder: (BuildContext context, void Function(void Function()) setState) {
       return Scaffold(
@@ -112,87 +96,82 @@ Widget mapSolver() {
             onPanUpdate: (details) => gestureEvent(context, details),
           ),
         ),
-        bottomNavigationBar: RepaintBoundary(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            switchInCurve: Curves.bounceIn,
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              final offsetAnimation = Tween(
-                begin: const Offset(1.0, 0.0),
-                end: const Offset(0.0, 0.0),
-              ).animate(animation);
-              return ClipRect(
-                child: SlideTransition(
-                  position: offsetAnimation,
-                  child: child,
-                ),
-              );
-            },
-            child: userDelete
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    key: const ValueKey<int>(0),
-                    children: [
-                      const Text('Delete all walls?'),
-                      Padding(
-                        padding: const EdgeInsets.all(buttonPadding),
-                        child: FilledButton.tonal(
-                          onPressed: () {
-                            points.clear();
-                            updateMap();
-                            setState(() => userDelete = false);
-                          },
-                          child: const Icon(
-                            Icons.check_circle,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(buttonPadding),
-                        child: FilledButton.tonal(
-                          onPressed: () => setState(() => userDelete = false),
-                          child: const Icon(
-                            Icons.cancel,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    key: const ValueKey<int>(1),
-                    children: [
-                      makeToolButton(
-                          DrawingTool.position, Icons.my_location, setState),
-                      makeToolButton(DrawingTool.target, Icons.flag, setState),
-                      makeToolButton(
-                          DrawingTool.draw, Icons.select_all, setState),
-                      makeToolButton(
-                          DrawingTool.erase, Icons.deselect, setState),
-                      Padding(
-                        padding: const EdgeInsets.all(buttonPadding),
-                        child: Visibility(
-                          visible: !userDelete,
-                          child: FilledButton.tonal(
-                            onPressed: () {
-                              setState(() {
-                                tool = DrawingTool.none;
-                                userDelete = true;
-                              });
-                            },
-                            child: const Icon(Icons.delete_forever),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
+        bottomNavigationBar: MapToolBar(),
       );
     },
   );
+}
+
+class MapToolBar extends StatefulWidget {
+  const MapToolBar({
+    super.key,
+  });
+
+  @override
+  State<MapToolBar> createState() => _MapToolBarState();
+}
+
+class _MapToolBarState extends State<MapToolBar> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      final toolIndex = index + 1;
+      if (toolIndex < DrawingTool.values.length) {
+        tool = DrawingTool.values[toolIndex];
+        _selectedIndex = index;
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Erase All Walls'),
+              content: const Text('Are you sure you want to erase all walls?'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Erase All'),
+                  onPressed: () {
+                    points.clear();
+                    updateMap();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+            icon: Icon(Icons.my_location), label: 'Move Start'),
+        BottomNavigationBarItem(icon: Icon(Icons.flag), label: 'Move Target'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.select_all), label: 'Draw Wall'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.deselect), label: 'Erase Wall'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.delete_forever), label: 'Erase All'),
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Theme.of(context).colorScheme.secondary,
+      unselectedItemColor:
+          Theme.of(context).colorScheme.secondary.withAlpha(100),
+      onTap: _onItemTapped,
+    );
+  }
 }
 
 class MapCanvas extends CustomPainter {
