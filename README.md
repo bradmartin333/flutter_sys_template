@@ -36,7 +36,6 @@ These instructions assume you have a working Flutter installation. If not, follo
 
 # TODO
 
-- Refactor UI for Flutter version layout changes
 - Add macOS build instructions
 - Add iOS build instructions
 - Add custom icons
