@@ -15,7 +15,7 @@ foreach ($dir in $oldBuildDirs) {
 
 # Build flutter and copy build
 Start-Process -FilePath "flutter" -ArgumentList "build windows --release" -WorkingDirectory (Join-Path -Path $rootDir -ChildPath "UI") -NoNewWindow -Wait
-Copy-Item -Force -Recurse (Join-Path -Path $rootDir -ChildPath "UI\build\windows\runner\Release") -Destination $buildDir
+Copy-Item -Force -Recurse (Join-Path -Path $rootDir -ChildPath "UI\build\windows\x64\runner\Release") -Destination $buildDir
 Rename-Item -Path (Join-Path -Path $buildDir -ChildPath "Release") -NewName "bin"
 
 # Copy C++ libs

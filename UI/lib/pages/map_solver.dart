@@ -59,8 +59,7 @@ void gestureEvent(BuildContext context, dynamic gesture) {
         }
         break;
       case DrawingTool.none:
-      default:
-        break;
+      break;
     }
   }
 }

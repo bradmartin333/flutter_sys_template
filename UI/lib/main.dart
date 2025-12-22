@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_sys_template/app_model.dart';
 import 'package:flutter_sys_template/pages/alpha.dart';
 import 'package:flutter_sys_template/pages/map_solver.dart';
@@ -50,7 +49,7 @@ const List<Tab> tabs = <Tab>[
 ];
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -98,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10)),
-                    color: Theme.of(context).indicatorColor),
+                    color: Theme.of(context).tabBarTheme.indicatorColor),
                 tabs: tabs,
               ),
             ),
